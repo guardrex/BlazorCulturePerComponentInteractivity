@@ -1,0 +1,74 @@
+﻿@using System.Globalization
+@using System.Runtime.InteropServices
+@inject IJSRuntime JS
+@inject NavigationManager Navigation
+
+<p>
+    <label>
+        Select your locale:
+        <select @bind="Culture">
+            @foreach (var culture in supportedCultures)
+            {
+                <option value="@culture">@cultureDict[culture.Name]</option>
+            }
+        </select>
+    </label>
+</p>
+
+@code
+{
+    private Dictionary<string, string> cultureDict = 
+        new()
+        {
+            { "en-US", "English (United States)" },
+            { "es-CL", "Spanish (Chile)" }
+        };
+
+    private CultureInfo[] supportedCultures = new[]
+    {
+        new CultureInfo("en-US"),
+        new CultureInfo("es-CL"),
+    };
+
+    private CultureInfo Culture
+    {
+        get => CultureInfo.CurrentCulture;
+        set
+        {
+            if (CultureInfo.CurrentCulture != value)
+            {
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Create("WEBASSEMBLY")))
+                {
+                    // Running on WebAssembly in the browser
+                    var js = (IJSInProcessRuntime)JS;
+                    js.InvokeVoid("blazorCulture.set", value.Name);
+
+                    Navigation.NavigateTo(Navigation.Uri, forceLoad: true);
+                }
+                else
+                {
+                    // Running on the server
+                    if (CultureInfo.CurrentCulture != value)
+                    {
+                        var js = (IJSRuntime)JS;
+                        js.InvokeVoidAsync("blazorCulture.set", value.Name);
+
+                        var uri = new Uri(Navigation.Uri)
+                            .GetComponents(UriComponents.PathAndQuery, UriFormat.Unescaped);
+                        var cultureEscaped = Uri.EscapeDataString(value.Name);
+                        var uriEscaped = Uri.EscapeDataString(uri);
+
+                        Navigation.NavigateTo(
+                            $"Culture/Set?culture={cultureEscaped}&redirectUri={uriEscaped}",
+                            forceLoad: true);
+                    }
+                }
+            }
+        }
+    }
+
+    protected override void OnInitialized()
+    {
+        //Culture = CultureInfo.CurrentCulture;
+    }
+}
