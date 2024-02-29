@@ -30,7 +30,7 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseAntiforgery();
 
-var supportedCultures = new[] { "en-US", "es-CL" };
+var supportedCultures = new[] { "en-US", "es-CR" };
 var localizationOptions = new RequestLocalizationOptions()
     .SetDefaultCulture(supportedCultures[0])
     .AddSupportedCultures(supportedCultures)
