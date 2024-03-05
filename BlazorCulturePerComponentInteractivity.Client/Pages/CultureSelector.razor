@@ -37,35 +37,17 @@
         {
             if (CultureInfo.CurrentCulture != value)
             {
-                if (RuntimeInformation.IsOSPlatform(OSPlatform.Create("WEBASSEMBLY")))
-                {
-                    // Running on WebAssembly in the browser
-                    var js = (IJSInProcessRuntime)JS;
-                    js.InvokeVoid("blazorCulture.set", value.Name);
+                JS.InvokeVoidAsync("blazorCulture.set", value.Name);
 
-                    Navigation.NavigateTo(Navigation.Uri, forceLoad: true);
-                }
-                else
-                {
-                    // Running on the server
-                    var js = (IJSRuntime)JS;
-                    js.InvokeVoidAsync("blazorCulture.set", value.Name);
+                var uri = new Uri(Navigation.Uri)
+                    .GetComponents(UriComponents.PathAndQuery, UriFormat.Unescaped);
+                var cultureEscaped = Uri.EscapeDataString(value.Name);
+                var uriEscaped = Uri.EscapeDataString(uri);
 
-                    var uri = new Uri(Navigation.Uri)
-                        .GetComponents(UriComponents.PathAndQuery, UriFormat.Unescaped);
-                    var cultureEscaped = Uri.EscapeDataString(value.Name);
-                    var uriEscaped = Uri.EscapeDataString(uri);
-
-                    Navigation.NavigateTo(
-                        $"Culture/Set?culture={cultureEscaped}&redirectUri={uriEscaped}",
-                        forceLoad: true);
-                }
+                Navigation.NavigateTo(
+                    $"Culture/Set?culture={cultureEscaped}&redirectUri={uriEscaped}",
+                    forceLoad: true);
             }
         }
-    }
-
-    protected override void OnInitialized()
-    {
-        //Culture = CultureInfo.CurrentCulture;
     }
 }
