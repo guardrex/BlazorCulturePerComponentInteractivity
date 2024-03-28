@@ -37,7 +37,9 @@
         {
             if (CultureInfo.CurrentCulture != value)
             {
-                JS.InvokeVoidAsync("blazorCulture.set", value.Name);
+                // Although Hisham didn't cut this line, it looks like it no-ops and
+                // can be dropped ...
+                //JS.InvokeVoidAsync("blazorCulture.set", value.Name);
 
                 var uri = new Uri(Navigation.Uri)
                     .GetComponents(UriComponents.PathAndQuery, UriFormat.Unescaped);
